@@ -1,21 +1,10 @@
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:2.118
 USER root
-RUN apt-get update && \
-apt-get -y install apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg2 \
-    software-properties-common && \
-curl -fsSL https://download.docker.com/linux/$(. /etc/os-release;
-RUN systemctl start docker
-echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
-add-apt-repository \
-    "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
-    $(lsb_release -cs) \
-    stable" && \
-apt-get update && \
-apt-get -y install docker-ce
-RUN systemctl start docker
-RUN apt-get install -y docker-ce
-RUN usermod -a -G docker jenkins
-USER jenkins
+COPY run.sh ./run.sh
+RUN     curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-17.03.2-ce.tgz && tar --strip-components=1 -xvzf docker-17.03.2-ce.tgz -C /usr/local/bin && \
+        chmod +x ./run.sh && \
+        apt-get update -y && apt-get install -y sudo python-pip && \
+        pip install awscli && \
+        apt-get clean -y
+
+ENTRYPOINT ["/bin/bash","-c","./run.sh"]
